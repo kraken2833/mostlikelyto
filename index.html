@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who's Most Likely To... Regret This?</title>
+    <style>
+        :root {
+            --primary: #6e45e2;
+            --secondary: #88d3ce;
+            --dark: #121212;
+            --darker: #0a0a0a;
+            --light: #f5f5f5;
+            --glass: rgba(255, 255, 255, 0.05);
+            --neon-blue: #08f7fe;
+            --neon-pink: #fe53bb;
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--dark);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, var(--neon-pink), var(--neon-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 10px rgba(142, 45, 226, 0.3);
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .game-area {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .prompt-card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 3rem 2rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            width: 100%;
+        }
+
+        .prompt-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .prompt-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(142, 45, 226, 0.1),
+                rgba(74, 0, 224, 0)
+            );
+            transform: rotate(30deg);
+            z-index: -1;
+        }
+
+        .prompt-text {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .prompt-highlight {
+            color: var(--neon-pink);
+            font-weight: 700;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            width: 100%;
+            justify-content: center;
+        }
+
+        button {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: var(--light);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(110, 69, 226, 0.3);
+            position: relative;
+            overflow: hidden;
+            font-size: 1.1rem;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(110, 69, 226, 0.4);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .instructions {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .prompt-text {
+                font-size: 1.5rem;
+            }
+
+            .container {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .prompt-text {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Who's Most Likely To... Regret This?</h1>
+            <p class="subtitle">A chaotic drinking game of poor life choices</p>
+        </header>
+
+        <div class="game-area">
+            <div class="prompt-card">
+                <p class="prompt-text">Who's most likely to <span class="prompt-highlight" id="current-prompt">have a secret identity?</span></p>
+            </div>
+
+            <div class="controls">
+                <button id="next-prompt">Next Prompt</button>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <p>Read the prompt aloud and discuss with your group who's most likely to do it.</p>
+            <p>That person (or people, in case of a tie) must drink!</p>
+            <p>Click "Next Prompt" for a new scenario.</p>
+        </div>
+    </div>
+
+    <script>
+        // Combined prompts list (your originals + dark/morbid ones)
+        const allPrompts = [
+            // Your original prompts
+            "sell feet pics for gas money?",
+            "accidentally marry a cousin?",
+            "hide a body without asking questions?",
+            "lie under oath with a straight face?",
+            "survive a zombie apocalypse just by hiding?",
+            "get banned from a wedding?",
+            "eat something off the floor... in public?",
+            "blackmail their boss?",
+            "wake up in another country with no passport?",
+            "send a risky text to the wrong person?",
+            "fake being sick to avoid seeing friends?",
+            "run a scam and call it a 'side hustle'?",
+            "date someone just for free food?",
+            "drink expired milk on purpose?",
+            "cry after sending a voice note?",
+            "start a pyramid scheme with friends?",
+            "get possessed and somehow vibe with the demon?",
+            "get a tattoo of their ex’s name... twice?",
+            "make a burner account to stalk people?",
+            "join a cult and immediately want to be the leader?",
+            "crash a funeral for the food?",
+            "ghost someone then text 'wyd' a month later?",
+            "eat a raw onion for $5?",
+            "lie about being vegan just for attention?",
+            "live in a haunted house and be cool with it?",
+            "run for office as a joke—and win?",
+            "go viral for the worst reason imaginable?",
+            "text their therapist during a party?",
+            "steal flowers from a graveyard?",
+            "accidentally start a fire and walk away like nothing happened?",
+            "get kicked out of a museum for touching stuff?",
+            "bribe a teacher for better grades?",
+            "cheat on a test and still fail?",
+            "leave a party without saying goodbye?",
+            "fake their own kidnapping for clout?",
+            "throw up in an Uber and blame the driver?",
+            "eat dog food as a dare and enjoy it?",
+            "get stuck in a washing machine and panic?",
+            "sell their bath water online?",
+            "be the reason the group is banned from a bar?",
+            "laugh at a funeral and make it worse?",
+            "wear the same underwear two days in a row... by choice?",
+            "join a pyramid scheme and believe it’s 'entrepreneurship'?",
+            "stalk their ex’s new partner’s dog?",
+            "befriend a stalker just to hear gossip?",
+            "show up to work drunk and act normal?",
+            "tell a child Santa isn’t real... unprovoked?",
+            "flirt with someone at a funeral?",
+            "say 'I love you' during a one-night stand?",
+            "catfish their own friend as a joke?",
+            "take candy from a child and eat it?",
+            "fight a grandparent over inheritance?",
+            "get into a bar fight... and lose to someone half their size?",
+            "mistake a stranger for their friend and hug them?",
+            "pretend to be a doctor online?",
+            "try to summon a demon just to see what happens?",
+            "talk trash in a group chat... and send it to the person?",
+            "lie about knowing CPR during an emergency?",
+            "try to break into their own house and get arrested?",
+            "sleep with socks on... every night?",
+            "eat something just to prove a point?",
+            "use their own tears for skincare?",
+            "record a crying selfie?",
+            "fall in love with a scammer?",
+            "keep a voodoo doll 'just in case'?",
+            "have a burner TikTok account for drama?",
+            "get banned from a library for being too loud?",
+            "say 'I could fix them' about a literal criminal?",
+            "watch a horror movie... alone... at 3 AM?",
+            "believe a horoscope and end a friendship over it?",
+            "get a face tattoo after one drink?",
+            "make out with a stranger and forget their name instantly?",
+            "start a podcast no one listens to?",
+            "confess to a crime they didn’t commit for attention?",
+            "think the Earth is flat... as a joke (but also not)?",
+            "eat expired meat and just 'wait it out'?",
+            "lick something they absolutely shouldn’t?",
+            "lie about being on a diet just to eat off your plate?",
+            "take a pic at a crime scene for the aesthetic?",
+            "believe every conspiracy theory at once?",
+            "attend their own intervention and deny everything?",
+            "start crying while arguing and use it as a weapon?",
+            "pretend to be someone else at a party?",
+            "flash a fake badge to skip a line?",
+            "lose their phone in the fridge?",
+            "laugh during a serious confession?",
+            "send their location to someone by accident while talking trash?",
+            "purposely sabotage a group project for revenge?",
+            "join a secret society and immediately overshare online?",
+            "get a tattoo in someone else’s handwriting?",
+            "keep screenshots from 4 years ago 'just in case'?",
+            "break up with someone over a meme?",
+            "have a full-on argument with themselves in the mirror?",
+            "crash a wedding just for cake?",
+            "genuinely believe they’re a vampire?",
+            "get cursed and not even notice?",
+            "befriend a mannequin and give it a name?",
+            "drink from an unknown cup and say 'YOLO'?",
+            "fall asleep in a stranger’s house?",
+            "keep their ex’s hoodie 'for emotional support'?",
+            
+            // Dark/morbid additions
+            "fake their own death... and then show up at their funeral in disguise?",
+            "get away with murder because everyone would assume they're too incompetent?",
+            "be a serial killer's favorite victim because they’re just that annoying?",
+            "dig up a corpse just to win an argument?",
+            "keep a human skull as a 'roommate'?",
+            "write a suicide note… and then turn it into a bestselling novel?",
+            "be cryogenically frozen… and wake up even more disappointed?",
+            "haunt their ex instead of moving on?",
+            "sell their soul… and then try to return it for store credit?",
+            "die alone… but leave behind a really awkward will?",
+            "rob a bank… but leave their ID at the scene?",
+            "get arrested for tax evasion… on their OnlyFans earnings?",
+            "be the worst criminal ever because they'd confess immediately?",
+            "get caught in a crime because they livestreamed it?",
+            "be the first to crack under interrogation… over a parking ticket?",
+            "donate their body to science… and then haunt the lab?",
+            "wake up during surgery… and start giving the doctors notes?",
+            "keep their amputated limb as a pet?",
+            "try necromancy… just to get out of paying rent?",
+            "sell their organs… but regret it when they need them later?",
+            "marry their cousin… for the tax benefits?",
+            "get disowned… and then show up at Thanksgiving anyway?",
+            "be left at the altar… and then burn down the church?",
+            "be the family disappointment… even at their own funeral?",
+            "be the black sheep of the family… because they're the only one who *hasn't* committed a felony?",
+            "be possessed… but the demon gives up because they're too much work?",
+            "be stalked by a ghost… who eventually files a restraining order?",
+            "die first in a horror movie… but somehow survive out of pure spite?",
+            "summon a demon… just to complain about their love life?",
+            "be reincarnated… as something deeply embarrassing?",
+            "die in a freak accident… and have it be the most interesting thing they ever did?",
+            "be the last person on Earth… and still manage to disappoint humanity?",
+            "be buried in an unmarked grave… and then get gentrified?",
+            "be forgotten by history… but remembered by their creditors?",
+            "be the reason the group gets banned from another funeral?"
+        ];
+
+        // Game state
+        let unusedPrompts = [...allPrompts];
+        let usedPrompts = [];
+
+        // DOM elements
+        const currentPromptElement = document.getElementById('current-prompt');
+        const nextPromptButton = document.getElementById('next-prompt');
+
+        // Get a random prompt (non-repeating)
+        function getRandomPrompt() {
+            if (unusedPrompts.length === 0) {
+                // Reset if all prompts have been used
+                unusedPrompts = [...usedPrompts];
+                usedPrompts = [];
+                alert("All prompts used! Recycling prompts now.");
+            }
+            
+            const randomIndex = Math.floor(Math.random() * unusedPrompts.length);
+            const prompt = unusedPrompts.splice(randomIndex, 1)[0];
+            usedPrompts.push(prompt);
+            
+            return prompt;
+        }
+
+        // Update the current prompt
+        function updatePrompt() {
+            currentPromptElement.textContent = getRandomPrompt();
+        }
+
+        // Initialize the game
+        function initGame() {
+            // Shuffle prompts on load
+            unusedPrompts = [...allPrompts].sort(() => Math.random() - 0.5);
+            updatePrompt();
+        }
+
+        // Event listeners
+        nextPromptButton.addEventListener('click', updatePrompt);
+
+        // Initialize the game
+        initGame();
+    </script>
+</body>
+</html>
